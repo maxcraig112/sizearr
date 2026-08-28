@@ -7,9 +7,16 @@ app = Flask(__name__)
 
 # Root media directories to scan. Each top-level folder inside these
 # is treated as one "title" (a movie folder, or a TV show folder).
+#
+# The paths are configurable via environment variables so you can point
+# the app at wherever your library actually lives (or mount a single
+# media root and set these to the subfolders inside it):
+#
+#   MOVIES_PATH  - default /media/movies
+#   TV_PATH      - default /media/tv
 MEDIA_ROOTS = {
-    "movies": "/media/movies",
-    "tv": "/media/tv",
+    "movies": os.environ.get("MOVIES_PATH", "/media/movies"),
+    "tv": os.environ.get("TV_PATH", "/media/tv"),
 }
 
 # In-memory cache of scan results, refreshed on a timer and on-demand.

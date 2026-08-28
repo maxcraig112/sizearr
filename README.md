@@ -19,7 +19,9 @@ up the most space on disk.
 
 ### With Docker (recommended)
 
-Add this to your existing `docker-compose.yml`:
+Add this to your existing `docker-compose.yml`. Set `MOVIES_PATH` and
+`TV_PATH` to wherever the libraries live *inside the container*, and mount
+your real directories accordingly:
 
 ```yaml
 services:
@@ -28,9 +30,15 @@ services:
     container_name: media-size-browser
     ports:
       - "5432:5432"
+    environment:
+      - MOVIES_PATH=/media/movies
+      - TV_PATH=/media/tv
     volumes:
-      - /path/to/your/movies:/media/movies:ro
-      - /path/to/your/tv:/media/tv:ro
+      # One media root, with movies/ and tv/ inside it:
+      - /path/to/your/media:/media:ro
+      # ...or mount the two libraries separately:
+      # - /path/to/your/movies:/media/movies:ro
+      # - /path/to/your/tv:/media/tv:ro
     restart: unless-stopped
 ```
 
@@ -55,9 +63,11 @@ services:
     container_name: media-size-browser
     ports:
       - "5432:5432"
+    environment:
+      - MOVIES_PATH=/media/movies
+      - TV_PATH=/media/tv
     volumes:
-      - /path/to/your/movies:/media/movies:ro
-      - /path/to/your/tv:/media/tv:ro
+      - /path/to/your/media:/media:ro
     restart: unless-stopped
 ```
 
@@ -77,20 +87,25 @@ GitHub repo, go to Settings → Secrets and variables → Actions, and add:
 ### Without Docker
 
 ```bash
-pip install -r requirements.txt
-python app.py
+make install     # or: pip install -r requirements.txt
+make run         # or: python app.py
+
+# point it at a different library
+MOVIES_PATH=/data/movies TV_PATH=/data/tv make run
 ```
 
-By default it looks for media under `/media/movies` and `/media/tv`. Change
-`MEDIA_ROOTS` in `app.py` if your paths are different, or mount your real
+By default it looks for media under `/media/movies` and `/media/tv`. Set
+`MOVIES_PATH` and `TV_PATH` to point it somewhere else, or mount your real
 directories to those paths if running in a container.
 
 ## Configuration
 
-| Variable                    | Default | Description                                   |
-|------------------------------|---------|------------------------------------------------|
-| `PORT`                        | `5432`  | Port the web server listens on                |
-| `REFRESH_INTERVAL_SECONDS`    | `3600`  | How often to automatically rescan, in seconds |
+| Variable                    | Default         | Description                                   |
+|------------------------------|-----------------|-----------------------------------------------|
+| `MOVIES_PATH`                 | `/media/movies` | Directory scanned for movie titles           |
+| `TV_PATH`                     | `/media/tv`     | Directory scanned for TV titles              |
+| `PORT`                        | `5432`          | Port the web server listens on               |
+| `REFRESH_INTERVAL_SECONDS`    | `3600`          | How often to automatically rescan, in seconds |
 
 ## Project layout
 
@@ -100,6 +115,7 @@ directories to those paths if running in a container.
 ├── templates/
 │   └── index.html       # Frontend table (DataTables for sort/filter)
 ├── requirements.txt
+├── Makefile             # `make install` / `make run`
 ├── Dockerfile
 └── .github/
     └── workflows/
