@@ -1,24 +1,9 @@
 """Best-effort quality/source/codec hints parsed from release-style filenames.
-Whatever isn't in the name simply isn't reported."""
+Whatever isn't in the name simply isn't reported.
+
+(The media extension list lives in config.py, driven by YAML.)"""
 import os
 import re
-
-VIDEO_EXTS = {
-    ".mkv", ".mp4", ".m4v", ".avi", ".mov", ".wmv", ".ts", ".m2ts",
-    ".mpg", ".mpeg", ".webm", ".flv", ".divx",
-}
-
-# Artwork, sidecar metadata and release junk. The scan skips these entirely -
-# they aren't "the media" and just clutter the size totals and the per-episode
-# breakdown. A blocklist (rather than a video-only allowlist) so an unusual but
-# genuine media file - a disc image, say - is never hidden.
-NON_MEDIA_EXTS = {
-    # artwork
-    ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".tbn", ".ico", ".svg",
-    # sidecar metadata / release junk
-    ".nfo", ".xml", ".txt", ".md", ".json", ".sfv", ".srr", ".par2",
-    ".url", ".log", ".ds_store", ".db",
-}
 
 # Tokens commonly baked into filenames by Radarr / Sonarr / scene groups.
 _TOKEN_RES = re.compile(r"(?<![a-z0-9])(2160p|1080p|720p|576p|480p)(?![a-z0-9])", re.I)

@@ -2,9 +2,10 @@
 import datetime
 import os
 
+from .config import VIDEO_EXTS
 from .ffprobe import ffprobe_available, run_ffprobe
 from .fsutil import iter_files
-from .naming import VIDEO_EXTS, parse_name_tags
+from .naming import parse_name_tags
 
 
 def _iso(ts):

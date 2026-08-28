@@ -10,6 +10,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app.py .
+# The sizearr/ package - includes config.default.yml, the base configuration.
 COPY sizearr/ sizearr/
 COPY templates/ templates/
 COPY static/ static/

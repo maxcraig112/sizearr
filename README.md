@@ -55,6 +55,9 @@ services:
       # ...or mount the two libraries separately:
       # - /path/to/your/movies:/media/movies:ro
       # - /path/to/your/tv:/media/tv:ro
+      # Optional: drop a config.yml in here to change the media extension list
+      # (see "Configuration file" below).
+      # - /path/to/appdata/sizearr:/config
     restart: unless-stopped
 ```
 
@@ -92,7 +95,7 @@ without a real media library.
 
 ## Configuration
 
-All configuration is via environment variables.
+Deployment settings are environment variables:
 
 | Variable                  | Default         | Description                                                        |
 |---------------------------|-----------------|--------------------------------------------------------------------|
@@ -104,13 +107,40 @@ All configuration is via environment variables.
 | `ENABLE_DELETE`           | `true`          | `false` hides the Delete buttons and rejects `POST /api/delete`   |
 | `ENABLE_FFPROBE`          | `true`          | `false` skips `ffprobe` even when it is installed                 |
 | `FFPROBE`                 | `ffprobe`       | Path to the `ffprobe` binary                                     |
+| `SIZEARR_CONFIG`          | —               | Path to a YAML config file (see below)                            |
+
+### Configuration file
+
+The list of file extensions that count as media, and a couple of scan knobs,
+live in [`sizearr/config.default.yml`](sizearr/config.default.yml). To change
+them, don't edit that file — put just the keys you want into your own YAML and
+point sizearr at it:
+
+* set `SIZEARR_CONFIG=/path/to/config.yml`, **or**
+* mount your file at `/config/config.yml` — it's picked up automatically.
+
+Your values replace the defaults key by key. Setting `media_extensions.video`
+replaces the whole default video list, so copy the ones you want to keep.
+
+```yaml
+# /config/config.yml — only the keys you're changing
+media_extensions:
+  video:
+    - .mkv
+    - .mp4
+    - .m4v
+    - .avi
+    - .oddcontainer
+max_children: 500
+```
 
 ## How it works
 
 * Each top-level folder inside `MOVIES_PATH` / `TV_PATH` is one title. Its
-  size is the sum of the media files under it. Artwork, `.nfo` and other
-  non-media files are skipped so the totals reflect what the video actually
-  costs.
+  size is the sum of the files whose extension is in the media list — video,
+  audio and subtitles by default. Artwork, `.nfo` and other non-media files
+  are ignored, so the totals reflect what the video actually costs. The list
+  is a YAML config you can extend (see *Configuration file*).
 * Results are cached in memory and refreshed on the timer, on the *Rescan
   now* button, and immediately after a delete.
 * `ffprobe` is only ever run on the single file you click — never during the
@@ -135,12 +165,13 @@ All configuration is via environment variables.
 .
 ├── app.py                    # Entrypoint - starts sizearr.web
 ├── sizearr/                  # The app, split by concern:
-│   ├── config.py             #   env vars + logging, all in one place
+│   ├── config.py             #   env vars + logging + loads the YAML config
+│   ├── config.default.yml    #   default media extension list + scan knobs
 │   ├── fsutil.py             #   walking the media tree
 │   ├── scanner.py            #   folders -> the flat list of titles
 │   ├── cache.py              #   in-memory index of the last scan + refresh loop
 │   ├── paths.py              #   validating a request into a path inside a root
-│   ├── naming.py             #   quality tags + media/non-media extensions
+│   ├── naming.py             #   quality tags parsed from release-style names
 │   ├── ffprobe.py            #   optional real media metadata
 │   ├── detail.py             #   the per-item detail payload
 │   └── web.py                #   Flask app and routes
