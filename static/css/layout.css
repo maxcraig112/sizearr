@@ -20,6 +20,13 @@
   letter-spacing: -0.01em;
 }
 
+.app-header__version {
+  margin-left: -6px;
+  color: var(--muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
 .subtitle {
   margin-bottom: 22px;
   color: var(--muted);
