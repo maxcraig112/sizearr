@@ -1,0 +1,233 @@
+/* table.css — theming for the DataTables results grid and its footer controls. */
+
+.table-card {
+  overflow: hidden;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+table.dataTable {
+  width: 100% !important;
+  margin: 0 !important;
+  border-collapse: collapse;
+}
+
+table.dataTable thead th {
+  padding: 11px 16px;
+  background: var(--panel-2);
+  border-bottom: 1px solid var(--border) !important;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+table.dataTable thead th:focus {
+  outline: none;
+}
+
+table.dataTable tbody td {
+  padding: 10px 16px;
+  border-top: 1px solid var(--border) !important;
+  color: var(--text);
+  font-size: 13.5px;
+}
+
+table.dataTable tbody tr {
+  background: transparent;
+}
+
+table.dataTable tbody tr.even {
+  background: rgba(255, 255, 255, 0.015);
+}
+
+table.dataTable tbody tr:hover {
+  background: var(--panel-2);
+}
+
+table.dataTable tbody tr:first-child td {
+  border-top: 0 !important;
+}
+
+/* ---- Expand control + TV episode breakdown ---- */
+th.col-expand,
+td.col-expand {
+  width: 30px;
+  padding-right: 0;
+  text-align: center;
+}
+
+table.dataTable tbody tr.has-children {
+  cursor: pointer;
+}
+
+.expander {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border: 4px solid transparent;
+  border-left-color: var(--muted);
+  transform: translateX(1px);
+  transition: transform 0.15s ease;
+}
+
+tr.has-children:hover .expander {
+  border-left-color: var(--text);
+}
+
+tr.is-expanded .expander {
+  transform: rotate(90deg);
+}
+
+table.dataTable tbody tr.child,
+table.dataTable tbody tr.child:hover {
+  background: var(--bg);
+}
+
+table.dataTable tbody tr.child td {
+  padding: 0;
+  border-top: 0 !important;
+}
+
+.episodes {
+  padding: 4px 16px 12px 46px;
+}
+
+.episodes__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.episodes__table td {
+  padding: 5px 8px;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+.episodes__table tr:first-child td {
+  border-top: 0;
+}
+
+.episode__name {
+  word-break: break-all;
+}
+
+.episode__size {
+  width: 1%;
+  text-align: right;
+  white-space: nowrap;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Soften the built-in sort arrows */
+table.dataTable thead .sorting::before,
+table.dataTable thead .sorting::after,
+table.dataTable thead .sorting_asc::before,
+table.dataTable thead .sorting_asc::after,
+table.dataTable thead .sorting_desc::before,
+table.dataTable thead .sorting_desc::after {
+  opacity: 0.35;
+}
+
+/* ---- Size column: relative-size bar + value ---- */
+th.col-size,
+td.col-size {
+  text-align: right;
+}
+
+.size-cell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.size-cell__track {
+  flex: 0 0 120px;
+  height: 6px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 3px;
+}
+
+.size-cell__fill {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, rgba(79, 157, 255, 0.5), var(--accent));
+  border-radius: 3px;
+}
+
+.size-cell__bytes {
+  min-width: 68px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Footer: length menu, info, pagination ---- */
+.dt-bottom {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+  background: var(--panel-2);
+}
+
+.dataTables_wrapper .dataTables_info {
+  padding: 0 !important;
+  color: var(--muted) !important;
+  font-size: 12px;
+}
+
+.dataTables_wrapper .dataTables_length {
+  margin-left: auto;
+  color: var(--muted) !important;
+  font-size: 12px;
+}
+
+.dataTables_wrapper .dataTables_length select {
+  margin: 0 4px;
+  padding: 3px 6px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+}
+
+.dataTables_wrapper .dataTables_paginate {
+  padding: 0 !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+  margin: 0 2px !important;
+  padding: 3px 9px !important;
+  border: 1px solid transparent !important;
+  border-radius: 6px !important;
+  color: var(--muted) !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+  background: var(--panel) !important;
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current,
+.dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+  color: var(--accent-ink) !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
+  color: #4a4f5a !important;
+}
+
+table.dataTable .dataTables_empty {
+  padding: 24px 16px !important;
+  color: var(--muted);
+}

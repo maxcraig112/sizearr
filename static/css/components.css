@@ -1,0 +1,183 @@
+/* components.css — reusable UI pieces: stat cards, filters, buttons, pills, status. */
+
+/* ---- Stat cards ---- */
+.stat {
+  padding: 13px 16px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.stat__label {
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.stat__value {
+  margin-top: 3px;
+  font-size: 20px;
+  font-weight: 650;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stat__value small {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.stat--scan .stat__value {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* ---- Segmented category filter ---- */
+.segmented {
+  display: inline-flex;
+  padding: 2px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.segmented__option {
+  padding: 5px 12px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.segmented__option:hover {
+  color: var(--text);
+}
+
+.segmented__option.is-active {
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 600;
+}
+
+/* ---- Search field ---- */
+.search {
+  flex: 1 1 220px;
+  min-width: 180px;
+  padding: 7px 11px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+}
+
+.search::placeholder {
+  color: var(--muted);
+}
+
+.search:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* ---- Buttons ---- */
+.btn {
+  padding: 7px 14px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.btn:hover {
+  border-color: var(--accent);
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  border-color: var(--border);
+  cursor: default;
+}
+
+/* ---- Scanning indicator ---- */
+.scanning-pill {
+  display: none;
+  align-items: center;
+  gap: 7px;
+  padding: 3px 10px;
+  border: 1px solid rgba(79, 157, 255, 0.35);
+  border-radius: 999px;
+  background: rgba(79, 157, 255, 0.12);
+  color: var(--accent);
+  font-size: 12px;
+}
+
+.scanning-pill.is-active {
+  display: inline-flex;
+}
+
+.spinner {
+  width: 11px;
+  height: 11px;
+  border: 2px solid rgba(79, 157, 255, 0.35);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spinner-rotate 0.8s linear infinite;
+}
+
+@keyframes spinner-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 2.4s;
+  }
+}
+
+/* ---- Status text ---- */
+.status {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.status.is-error {
+  color: var(--danger);
+}
+
+/* ---- Category pill ---- */
+.category-pill {
+  display: inline-block;
+  padding: 2px 9px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.category-pill--movies {
+  background: #22301f;
+  border-color: #2f4a2f;
+  color: #7fd67f;
+}
+
+.category-pill--tv {
+  background: #23233a;
+  border-color: #33335a;
+  color: #9d9dff;
+}

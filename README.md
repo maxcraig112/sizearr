@@ -12,8 +12,14 @@ up the most space on disk.
   it (extras, subtitles, multiple episodes, etc).
 - Serves a web page with a sortable table. Click "Size" to sort largest to
   smallest, filter by category, or search by title.
+- Groups TV by show; click a show row to expand a size-descending breakdown
+  of every file it contains (episodes, subtitles, extras).
 - Rescans automatically once an hour in the background, with a manual
   "Rescan now" button if you don't want to wait.
+- Logs every step of each scan to stdout (`docker logs -f media-size-browser`),
+  so you can see which folders it's walking, anything it can't read, and how
+  long the scan took. Front-end assets (jQuery / DataTables) are bundled under
+  `static/vendor/`, so it works with no internet access.
 
 ## Running it
 
@@ -87,16 +93,21 @@ GitHub repo, go to Settings → Secrets and variables → Actions, and add:
 ### Without Docker
 
 ```bash
-make install     # or: pip install -r requirements.txt
-make run         # or: python app.py
+make install       # or: pip install -r requirements.txt
+make run-local     # run against the bundled testdata/ fixture library
+make run           # run against MOVIES_PATH / TV_PATH from the environment
 
-# point it at a different library
+# point it at a real library
 MOVIES_PATH=/data/movies TV_PATH=/data/tv make run
 ```
 
 By default it looks for media under `/media/movies` and `/media/tv`. Set
 `MOVIES_PATH` and `TV_PATH` to point it somewhere else, or mount your real
 directories to those paths if running in a container.
+
+`make run-local` uses `testdata/` — a small library of empty placeholder
+files (see [`testdata/README.md`](testdata/README.md)) so you can see the UI
+working without a real media library.
 
 ## Configuration
 
@@ -106,18 +117,29 @@ directories to those paths if running in a container.
 | `TV_PATH`                     | `/media/tv`     | Directory scanned for TV titles              |
 | `PORT`                        | `5432`          | Port the web server listens on               |
 | `REFRESH_INTERVAL_SECONDS`    | `3600`          | How often to automatically rescan, in seconds |
+| `LOG_LEVEL`                   | `INFO`          | `DEBUG` adds a log line per title with its size |
 
 ## Project layout
 
 ```
 .
-├── app.py               # Flask app: scanning logic and API routes
+├── app.py                 # Flask app: scanning logic, logging, API routes
 ├── templates/
-│   └── index.html       # Frontend table (DataTables for sort/filter)
+│   └── index.html         # Page markup only
+├── static/
+│   ├── css/
+│   │   ├── base.css       # Design tokens, reset, document defaults
+│   │   ├── layout.css     # Page scaffold: column, header, stats grid, toolbar
+│   │   ├── components.css # Stat cards, filters, buttons, pills, status
+│   │   └── table.css      # DataTables theme + size-bar cell
+│   ├── js/
+│   │   └── app.js         # Fetches /api/media and renders the table
+│   └── vendor/            # Bundled jQuery + DataTables (no CDN needed)
+├── testdata/              # Empty placeholder library for `make run-local`
 ├── requirements.txt
-├── Makefile             # `make install` / `make run`
+├── Makefile               # `make install` / `make run` / `make run-local`
 ├── Dockerfile
 └── .github/
     └── workflows/
-        └── deploy.yml   # Builds and pushes the image on every push to main
+        └── deploy.yml     # Builds and pushes the image on every push to main
 ```

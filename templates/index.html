@@ -1,220 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Media Size Browser</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.13.11/css/jquery.dataTables.min.css">
-<style>
-  :root {
-    --bg: #0f1115;
-    --panel: #171a21;
-    --border: #2a2e37;
-    --text: #e6e8eb;
-    --muted: #9aa1ac;
-    --accent: #4f9dff;
-  }
-  * { box-sizing: border-box; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    margin: 0;
-    padding: 24px;
-  }
-  h1 {
-    font-size: 20px;
-    font-weight: 600;
-    margin: 0 0 4px 0;
-  }
-  .subtitle {
-    color: var(--muted);
-    font-size: 13px;
-    margin-bottom: 20px;
-  }
-  .toolbar {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 16px;
-    flex-wrap: wrap;
-  }
-  select, button {
-    background: var(--panel);
-    color: var(--text);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 6px 10px;
-    font-size: 13px;
-  }
-  button {
-    cursor: pointer;
-  }
-  button:hover {
-    border-color: var(--accent);
-  }
-  #status {
-    color: var(--muted);
-    font-size: 12px;
-  }
-  table.dataTable {
-    background: var(--panel);
-    border-radius: 8px;
-    overflow: hidden;
-    width: 100% !important;
-  }
-  table.dataTable thead th {
-    background: #1d212b;
-    color: var(--text);
-    border-bottom: 1px solid var(--border) !important;
-  }
-  table.dataTable tbody td {
-    border-top: 1px solid var(--border) !important;
-    color: var(--text);
-  }
-  table.dataTable tbody tr:hover {
-    background: #1d212b;
-  }
-  .category-pill {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 999px;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-  }
-  .category-movies { background: #2a3a2a; color: #7fd67f; }
-  .category-tv { background: #2a2a3a; color: #9d9dff; }
-  .dataTables_filter input,
-  .dataTables_length select {
-    background: var(--panel);
-    color: var(--text);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 4px 8px;
-  }
-  .dataTables_wrapper .dataTables_info,
-  .dataTables_wrapper .dataTables_paginate {
-    color: var(--muted) !important;
-  }
-  .paginate_button {
-    color: var(--text) !important;
-  }
-  .paginate_button.current {
-    background: var(--accent) !important;
-    border-color: var(--accent) !important;
-    color: #0f1115 !important;
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Media Size Browser</title>
+  <link rel="icon" href="data:,">
+
+  <link rel="stylesheet" href="{{ static_url('vendor/jquery.dataTables-1.13.11.min.css') }}">
+  <link rel="stylesheet" href="{{ static_url('css/base.css') }}">
+  <link rel="stylesheet" href="{{ static_url('css/layout.css') }}">
+  <link rel="stylesheet" href="{{ static_url('css/components.css') }}">
+  <link rel="stylesheet" href="{{ static_url('css/table.css') }}">
 </head>
 <body>
+  <div class="wrap">
 
-<h1>Media Size Browser</h1>
-<div class="subtitle" id="subtitle">Scanning your library&hellip;</div>
+    <header class="app-header">
+      <h1 class="app-header__title">Media Size Browser</h1>
+      <span class="scanning-pill" id="scanningPill">
+        <span class="spinner"></span>
+        <span id="scanningText">Scanning&hellip;</span>
+      </span>
+    </header>
+    <p class="subtitle" id="subtitle">Loading&hellip;</p>
 
-<div class="toolbar">
-  <select id="categoryFilter">
-    <option value="">All categories</option>
-    <option value="movies">Movies</option>
-    <option value="tv">TV</option>
-  </select>
-  <button id="rescanBtn">Rescan now</button>
-  <span id="status"></span>
-</div>
+    <section class="stats" aria-label="Library summary">
+      <div class="stat"><div class="stat__label">Titles</div><div class="stat__value" id="statTitles">&mdash;</div></div>
+      <div class="stat"><div class="stat__label">Total size</div><div class="stat__value" id="statTotal">&mdash;</div></div>
+      <div class="stat"><div class="stat__label">Movies</div><div class="stat__value" id="statMovies">&mdash;</div></div>
+      <div class="stat"><div class="stat__label">TV</div><div class="stat__value" id="statTv">&mdash;</div></div>
+      <div class="stat stat--scan"><div class="stat__label">Last scanned</div><div class="stat__value" id="statScan">&mdash;</div></div>
+    </section>
 
-<table id="mediaTable" class="display" style="width:100%">
-  <thead>
-    <tr>
-      <th>Title</th>
-      <th>Category</th>
-      <th data-order="desc">Size</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
+    <div class="toolbar">
+      <div class="segmented" id="categoryFilter" aria-label="Filter by category">
+        <button type="button" class="segmented__option is-active" data-cat="">All</button>
+        <button type="button" class="segmented__option" data-cat="movies">Movies</button>
+        <button type="button" class="segmented__option" data-cat="tv">TV</button>
+      </div>
+      <input type="search" id="search" class="search" placeholder="Search titles&hellip;" aria-label="Search titles">
+      <button type="button" id="rescanBtn" class="btn">Rescan now</button>
+      <span id="status" class="status"></span>
+    </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.13.11/js/jquery.dataTables.min.js"></script>
-<script>
-function formatBytes(bytes) {
-  if (bytes === 0) return "0 B";
-  const units = ["B", "KB", "MB", "GB", "TB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(1024));
-  const val = bytes / Math.pow(1024, i);
-  return val.toFixed(val >= 100 || i === 0 ? 0 : 1) + " " + units[i];
-}
+    <div class="table-card">
+      <table id="mediaTable" class="display">
+        <thead>
+          <tr>
+            <th class="col-expand" aria-label="Expand"></th>
+            <th>Title</th>
+            <th>Category</th>
+            <th class="col-size">Size</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
 
-let table;
+  </div>
 
-function initTable() {
-  table = $('#mediaTable').DataTable({
-    data: [],
-    columns: [
-      { data: 'name', title: 'Title' },
-      {
-        data: 'category',
-        title: 'Category',
-        render: function (data) {
-          const label = data === 'movies' ? 'Movies' : 'TV';
-          return '<span class="category-pill category-' + data + '">' + label + '</span>';
-        }
-      },
-      {
-        data: 'size_bytes',
-        title: 'Size',
-        render: function (data, type) {
-          if (type === 'display') return formatBytes(data);
-          return data;
-        }
-      }
-    ],
-    order: [[2, 'desc']],
-    pageLength: 25,
-    lengthMenu: [10, 25, 50, 100, 250],
-  });
-
-  $('#categoryFilter').on('change', function () {
-    const val = this.value;
-    table.column(1).search(val ? val : '', false, false).draw();
-  });
-}
-
-function loadData() {
-  $.getJSON('/api/media', function (resp) {
-    const items = resp.items || [];
-    table.clear();
-    table.rows.add(items);
-    table.draw();
-
-    const count = items.length;
-    const totalBytes = items.reduce((sum, i) => sum + i.size_bytes, 0);
-    const lastScan = resp.last_scan ? new Date(resp.last_scan * 1000).toLocaleString() : 'never';
-
-    $('#subtitle').text(count + ' titles \u2022 ' + formatBytes(totalBytes) + ' total \u2022 last scanned ' + lastScan);
-
-    if (resp.scanning) {
-      $('#status').text('Scanning\u2026');
-    } else if (resp.error) {
-      $('#status').text('Error: ' + resp.error);
-    } else {
-      $('#status').text('');
-    }
-  });
-}
-
-$(document).ready(function () {
-  initTable();
-  loadData();
-  setInterval(loadData, 5000);
-
-  $('#rescanBtn').on('click', function () {
-    $('#status').text('Rescan requested\u2026');
-    $.post('/api/rescan', function () {
-      loadData();
-    });
-  });
-});
-</script>
-
+  <script src="{{ static_url('vendor/jquery-3.7.1.min.js') }}"></script>
+  <script src="{{ static_url('vendor/jquery.dataTables-1.13.11.min.js') }}"></script>
+  <script src="{{ static_url('js/app.js') }}"></script>
 </body>
 </html>

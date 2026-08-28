@@ -4,3 +4,11 @@ __pycache__/
 venv/
 .env
 .DS_Store
+
+# Local run artifacts
+*.log
+
+# NOTE: testdata/ is intentionally committed - it's the fixture library for
+# `make run-local`. Keep your real media outside the repo (e.g. mount it in
+# Docker, or point MOVIES_PATH / TV_PATH at it).
+/media/

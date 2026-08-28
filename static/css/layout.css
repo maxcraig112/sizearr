@@ -1,0 +1,46 @@
+/* layout.css — page scaffold: the centred column, header, stats grid, toolbar. */
+
+.wrap {
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.app-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.app-header__title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.subtitle {
+  margin-bottom: 22px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.subtitle.is-error {
+  color: var(--danger);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
