@@ -308,11 +308,16 @@ def _apply_deletion_to_cache(category, name, child):
                 if not (it["category"] == category and it["name"] == name)
             ]
             return
+        prefix = child.rstrip("/") + "/"  # so deleting "Season 01" also drops its episodes
         for it in items:
             if it["category"] == category and it["name"] == name:
                 kids = it.get("children") or []
-                freed = sum(k["size_bytes"] for k in kids if k["name"] == child)
-                remaining = [k for k in kids if k["name"] != child]
+
+                def _hit(rel):
+                    return rel == child or rel.startswith(prefix)
+
+                freed = sum(k["size_bytes"] for k in kids if _hit(k["name"]))
+                remaining = [k for k in kids if not _hit(k["name"])]
                 it["size_bytes"] = max(0, it["size_bytes"] - freed)
                 if remaining:
                     it["children"] = remaining

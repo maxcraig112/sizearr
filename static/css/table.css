@@ -131,6 +131,74 @@ table.dataTable tbody tr.child td {
   text-align: right;
 }
 
+/* ---- Seasons (show -> seasons -> episodes) ---- */
+.episodes--seasons {
+  padding: 6px 16px 10px 40px;
+}
+
+.season + .season {
+  border-top: 1px solid var(--border);
+}
+
+.season__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 0;
+}
+
+.season__toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.season__toggle:hover .season__name {
+  color: var(--accent);
+}
+
+.season__toggle:hover .expander {
+  border-left-color: var(--text);
+}
+
+.season.is-open > .season__header .expander {
+  transform: rotate(90deg);
+}
+
+.season__name {
+  font-weight: 600;
+}
+
+.season__meta {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.season__size {
+  color: var(--text);
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.season__episodes {
+  margin: 0 0 8px 18px;
+}
+
+.season__episodes[hidden] {
+  display: none;
+}
+
 /* ---- Row actions (delete) ---- */
 th.col-actions,
 td.col-actions {

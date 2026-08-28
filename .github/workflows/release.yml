@@ -21,6 +21,9 @@ env:
 jobs:
   release:
     runs-on: ubuntu-latest
+    env:
+      # Optional. Only needed to sync the Docker Hub repo description below.
+      DOCKERHUB_DESCRIPTION_TOKEN: ${{ secrets.DOCKERHUB_DESCRIPTION_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -115,15 +118,22 @@ jobs:
               --generate-notes
           fi
 
-      # Pushes the Docker Hub repo's short description + full overview (this
+      # Syncs the Docker Hub repo's short description + full overview (this
       # README, with relative links rewritten to absolute GitHub URLs).
-      # DOCKERHUB_TOKEN needs "Read, Write, Delete" scope for this API; if it
-      # 401s, add a DOCKERHUB_PASSWORD secret and use that here instead.
+      #
+      # Docker Hub's description API needs a token with "Read, Write, Delete"
+      # scope (Read & Write is not enough). Your normal DOCKERHUB_TOKEN almost
+      # certainly can't do it. To turn this on: create a separate PAT with
+      # that scope and add it as the DOCKERHUB_DESCRIPTION_TOKEN secret. Until
+      # then this step just skips itself, and the image's OCI labels still
+      # carry the description + repo link.
       - name: Update Docker Hub description
+        if: ${{ env.DOCKERHUB_DESCRIPTION_TOKEN != '' }}
+        continue-on-error: true
         uses: peter-evans/dockerhub-description@v4
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          password: ${{ env.DOCKERHUB_DESCRIPTION_TOKEN }}
           repository: ${{ env.IMAGE_NAME }}
           short-description: "Browse what's taking up disk space across your movie and TV libraries"
           readme-filepath: ./README.md

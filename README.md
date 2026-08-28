@@ -16,9 +16,9 @@ no longer want.
 
 ![sizearr library overview](images/overview.png)
 
-*Click a show to break it out by episode.*
+*Click a show to see its seasons, then a season to see its episodes.*
 
-![A TV show expanded to its episodes](images/tv-expanded.png)
+![A TV show expanded to its seasons and episodes](images/tv-expanded.png)
 
 *Click any file for the details — dates, quality tags pulled from the name,
 and real media info from ffprobe.*

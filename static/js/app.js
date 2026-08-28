@@ -1,7 +1,8 @@
 /* app.js — fetches /api/media on a timer and renders the results table.
-   TV shows expand to a per-episode size breakdown; movies are single rows.
-   When the server allows it, each row (and each episode) has a Delete button
-   guarded by a confirmation modal. */
+   TV shows expand to seasons, and each season expands to its episodes;
+   movies are single rows. When the server allows it, every row (show,
+   season, episode, movie) has a Delete button guarded by a confirmation
+   modal. */
 (function () {
   "use strict";
 
@@ -9,7 +10,8 @@
   var table;
   var maxSize = 1;            // largest title size in the data set, for the bar scale
   var lastItemsJson = null;   // skip re-rendering the grid when data is unchanged
-  var expanded = {};          // rowKey -> true, so open shows survive a redraw
+  var expanded = {};          // showKey -> true, so open shows survive a redraw
+  var expandedSeasons = {};   // showKey + "\0" + season -> true
   var canDelete = false;      // mirrors the server's ENABLE_DELETE
   var pendingDelete = null;   // {category, name, child, label} awaiting confirmation
 
@@ -68,47 +70,134 @@
     return '<button type="button" class="row-delete" data-action="delete">' + label + "</button>";
   }
 
-  function renderEpisodes(item) {
-    var nameAttr = ' data-name="' + escapeHtml(item.name) + '"';
-    var rows = item.children.map(function (c) {
-      var childAttr = ' data-child="' + escapeHtml(c.name) + '"';
-      var del = canDelete
-        ? '<button type="button" class="row-delete" data-action="delete-episode"' +
-          nameAttr + childAttr + ">Delete</button>"
-        : "";
-      return (
-        '<tr class="episode is-detailable"' + nameAttr + childAttr + ">" +
-        '<td class="episode__name">' + escapeHtml(c.name) + "</td>" +
-        '<td class="episode__size">' + formatBytes(c.size_bytes) + "</td>" +
-        '<td class="episode__actions">' + del + "</td>" +
-        "</tr>"
-      );
+  function seasonOf(relPath) {
+    var i = relPath.indexOf("/");
+    return i === -1 ? "" : relPath.slice(0, i);
+  }
+
+  // Pad digit runs so "Season 2" sorts before "Season 10".
+  function naturalKey(s) {
+    return String(s).replace(/\d+/g, function (n) {
+      return ("0000000000" + n).slice(-10);
+    });
+  }
+
+  function groupBySeason(children) {
+    var map = {};
+    var order = [];
+    children.forEach(function (c) {
+      var key = seasonOf(c.name);
+      if (!map[key]) {
+        map[key] = { name: key, size_bytes: 0, episodes: [] };
+        order.push(key);
+      }
+      map[key].size_bytes += c.size_bytes;
+      map[key].episodes.push(c);
+    });
+    var seasons = order.map(function (k) { return map[k]; });
+    seasons.forEach(function (s) {
+      s.episodes.sort(function (a, b) { return b.size_bytes - a.size_bytes; });
+    });
+    seasons.sort(function (a, b) {
+      // real season folders in natural order; loose "root" files last
+      var ak = a.name ? naturalKey(a.name) : "￿";
+      var bk = b.name ? naturalKey(b.name) : "￿";
+      return ak.localeCompare(bk);
+    });
+    return seasons;
+  }
+
+  function episodeRow(showName, ep, seasonName) {
+    var showAttr = ' data-name="' + escapeHtml(showName) + '"';
+    var childAttr = ' data-child="' + escapeHtml(ep.name) + '"';
+    var del = canDelete
+      ? '<button type="button" class="row-delete" data-action="delete-episode"' +
+        showAttr + childAttr + ">Delete</button>"
+      : "";
+    var label = seasonName ? ep.name.slice(seasonName.length + 1) : ep.name;
+    return (
+      '<tr class="episode is-detailable"' + showAttr + childAttr + ">" +
+      '<td class="episode__name">' + escapeHtml(label) + "</td>" +
+      '<td class="episode__size">' + formatBytes(ep.size_bytes) + "</td>" +
+      '<td class="episode__actions">' + del + "</td>" +
+      "</tr>"
+    );
+  }
+
+  function seasonBlock(showName, season) {
+    var label = season.name || "Episodes";
+    var showAttr = ' data-name="' + escapeHtml(showName) + '"';
+    var del = (canDelete && season.name)
+      ? '<button type="button" class="row-delete" data-action="delete-season"' +
+        showAttr + ' data-child="' + escapeHtml(season.name) + '">Delete</button>'
+      : "";
+    var eps = season.episodes.map(function (ep) {
+      return episodeRow(showName, ep, season.name);
     }).join("");
-    return '<div class="episodes"><table class="episodes__table"><tbody>' + rows + "</tbody></table></div>";
+    var count = season.episodes.length + (season.episodes.length === 1 ? " file" : " files");
+    return (
+      '<div class="season" data-name="' + escapeHtml(showName) +
+        '" data-season="' + escapeHtml(season.name) + '">' +
+        '<div class="season__header">' +
+          '<button type="button" class="season__toggle">' +
+            '<span class="expander"></span>' +
+            '<span class="season__name">' + escapeHtml(label) + "</span>" +
+            '<span class="season__meta">' + count + "</span>" +
+          "</button>" +
+          '<span class="season__size">' + formatBytes(season.size_bytes) + "</span>" +
+          del +
+        "</div>" +
+        '<table class="episodes__table season__episodes" hidden><tbody>' + eps + "</tbody></table>" +
+      "</div>"
+    );
+  }
+
+  function renderShowBody(item) {
+    var blocks = groupBySeason(item.children).map(function (s) {
+      return seasonBlock(item.name, s);
+    }).join("");
+    return '<div class="episodes episodes--seasons">' + blocks + "</div>";
+  }
+
+  function seasonStateKey(showKey, seasonName) {
+    return showKey + "\t" + seasonName;
+  }
+
+  function reopenSeasons(childRow, showKey) {
+    childRow.find(".season").each(function () {
+      var el = $(this);
+      if (expandedSeasons[seasonStateKey(showKey, el.attr("data-season"))]) {
+        el.addClass("is-open").find(".season__episodes").prop("hidden", false);
+      }
+    });
   }
 
   function toggleRow(tr) {
     var row = table.row(tr);
     var d = row.data();
     if (!hasChildren(d)) return;
+    var key = rowKey(d);
     if (row.child.isShown()) {
       row.child.hide();
       tr.removeClass("is-expanded");
-      delete expanded[rowKey(d)];
+      delete expanded[key];
+      Object.keys(expandedSeasons).forEach(function (k) {
+        if (k.indexOf(key + "\t") === 0) delete expandedSeasons[k];
+      });
     } else {
-      row.child(renderEpisodes(d)).show();
+      row.child(renderShowBody(d)).show();
       tr.addClass("is-expanded");
-      expanded[rowKey(d)] = true;
+      expanded[key] = true;
     }
   }
 
   function restoreExpanded() {
     table.rows().every(function () {
       var d = this.data();
-      if (hasChildren(d) && expanded[rowKey(d)]) {
-        this.child(renderEpisodes(d)).show();
-        $(this.node()).addClass("is-expanded");
-      }
+      if (!hasChildren(d) || !expanded[rowKey(d)]) return;
+      this.child(renderShowBody(d)).show();
+      var node = $(this.node()).addClass("is-expanded");
+      reopenSeasons(node.next("tr.child"), rowKey(d));
     });
   }
 
@@ -157,9 +246,11 @@
   }
 
   function onDeleteClick(e) {
-    e.stopPropagation(); // don't also toggle the show's episode list
+    e.stopPropagation(); // don't also toggle the row it sits in
     var btn = $(this);
-    if (btn.data("action") === "delete-episode") {
+    var action = btn.data("action");
+
+    if (action === "delete-episode") {
       openConfirm({
         category: "tv",
         name: String(btn.data("name")),
@@ -168,6 +259,18 @@
       });
       return;
     }
+
+    if (action === "delete-season") {
+      var season = String(btn.data("child"));
+      openConfirm({
+        category: "tv",
+        name: String(btn.data("name")),
+        child: season,
+        label: btn.data("name") + " – " + season + " (whole season)"
+      });
+      return;
+    }
+
     var d = table.row(btn.closest("tr")).data();
     if (!d) return;
     openConfirm({
@@ -176,6 +279,19 @@
       child: null,
       label: d.name + (d.category === "tv" ? " (whole show)" : "")
     });
+  }
+
+  function onSeasonToggle(e) {
+    e.stopPropagation();
+    var seasonEl = $(this).closest(".season");
+    var open = seasonEl.toggleClass("is-open").hasClass("is-open");
+    seasonEl.find(".season__episodes").prop("hidden", !open);
+    var k = seasonStateKey("tv/" + seasonEl.attr("data-name"), seasonEl.attr("data-season"));
+    if (open) {
+      expandedSeasons[k] = true;
+    } else {
+      delete expandedSeasons[k];
+    }
   }
 
   /* ---- Detail popup ---- */
@@ -326,6 +442,7 @@
 
     var tbody = $("#mediaTable tbody");
     tbody.on("click", ".row-delete", onDeleteClick);
+    tbody.on("click", ".season__toggle", onSeasonToggle);
     tbody.on("click", "tr.is-detailable", onRowDetailClick);
     tbody.on("click", "tr.has-children", function () {
       toggleRow($(this));
