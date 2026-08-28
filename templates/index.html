@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Media Size Browser</title>
+  <title>sizearr</title>
   <link rel="icon" href="data:,">
 
   <link rel="stylesheet" href="{{ static_url('vendor/jquery.dataTables-1.13.11.min.css') }}">
@@ -16,7 +16,7 @@
   <div class="wrap">
 
     <header class="app-header">
-      <h1 class="app-header__title">Media Size Browser</h1>
+      <h1 class="app-header__title">sizearr</h1>
       <span class="scanning-pill" id="scanningPill">
         <span class="spinner"></span>
         <span id="scanningText">Scanning&hellip;</span>
@@ -51,12 +51,37 @@
             <th>Title</th>
             <th>Category</th>
             <th class="col-size">Size</th>
+            <th class="col-actions" aria-label="Actions"></th>
           </tr>
         </thead>
         <tbody></tbody>
       </table>
     </div>
 
+  </div>
+
+  <div class="modal" id="confirmModal" hidden>
+    <div class="modal__backdrop" data-close></div>
+    <div class="modal__dialog" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+      <h2 class="modal__title" id="confirmTitle">Delete this item?</h2>
+      <p class="modal__body" id="confirmBody"></p>
+      <p class="modal__error" id="confirmError" hidden></p>
+      <div class="modal__actions">
+        <button type="button" class="btn" id="confirmCancel" data-close>Cancel</button>
+        <button type="button" class="btn btn--danger" id="confirmDelete">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="detailModal" hidden>
+    <div class="modal__backdrop" data-close-detail></div>
+    <div class="modal__dialog modal__dialog--wide" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+      <h2 class="modal__title" id="detailTitle">Details</h2>
+      <div class="detail" id="detailBody"></div>
+      <div class="modal__actions">
+        <button type="button" class="btn" data-close-detail>Close</button>
+      </div>
+    </div>
   </div>
 
   <script src="{{ static_url('vendor/jquery-3.7.1.min.js') }}"></script>

@@ -1,46 +1,56 @@
-# Media Size Browser
+# sizearr
 
-A small web app that scans your movies and TV folders and shows every title
-in a single sortable, filterable table, so you can quickly see what's taking
-up the most space on disk.
+[![Build and publish image](https://github.com/maxcraig112/sizearr/actions/workflows/deploy.yml/badge.svg)](https://github.com/maxcraig112/sizearr/actions/workflows/deploy.yml)
+[![Docker image size](https://img.shields.io/docker/image-size/maximiliancraig112/sizearr/latest?label=docker%20image)](https://hub.docker.com/r/maximiliancraig112/sizearr)
+[![Docker pulls](https://img.shields.io/docker/pulls/maximiliancraig112/sizearr)](https://hub.docker.com/r/maximiliancraig112/sizearr)
 
-## What it does
+sizearr is a lightweight companion to the *arr stack that answers one
+question: **what is actually taking up all the space?** It scans your movie
+and TV libraries and presents every title in a single sortable, filterable
+table that lets you drill into any show, inspect a file, and delete what you
+no longer want.
 
-- Walks two directories you point it at (movies and TV), treating each
-  top-level folder as one title.
-- Computes the total size of each title, including everything nested inside
-  it (extras, subtitles, multiple episodes, etc).
-- Serves a web page with a sortable table. Click "Size" to sort largest to
-  smallest, filter by category, or search by title.
-- Groups TV by show; click a show row to expand a size-descending breakdown
-  of every file it contains (episodes, subtitles, extras).
-- Rescans automatically once an hour in the background, with a manual
-  "Rescan now" button if you don't want to wait.
-- Logs every step of each scan to stdout (`docker logs -f media-size-browser`),
-  so you can see which folders it's walking, anything it can't read, and how
-  long the scan took. Front-end assets (jQuery / DataTables) are bundled under
-  `static/vendor/`, so it works with no internet access.
+## Screenshots
 
-## Running it
+*The whole library at a glance*
 
-### With Docker (recommended)
+![sizearr library overview](images/overview.png)
 
-Add this to your existing `docker-compose.yml`. Set `MOVIES_PATH` and
-`TV_PATH` to wherever the libraries live *inside the container*, and mount
-your real directories accordingly:
+*Click a show to break it out by episode.*
+
+![A TV show expanded to its episodes](images/tv-expanded.png)
+
+*Click any file for the details — dates, quality tags pulled from the name,
+and real media info from ffprobe.*
+
+![Per-file detail panel](images/file-detail.png)
+
+*Deleting always asks first, and only ever touches paths inside your media
+folders.*
+
+![Delete confirmation dialog](images/delete-confirm.png)
+
+## Installation
+
+### Docker Compose (recommended)
+
+Add the service to your existing stack. Point `MOVIES_PATH` / `TV_PATH` at
+wherever the libraries live *inside the container* and mount your real
+directories to match:
 
 ```yaml
 services:
-  media-size-browser:
-    build: ./media-size-browser
-    container_name: media-size-browser
+  sizearr:
+    image: maximiliancraig112/sizearr:latest
+    container_name: sizearr
     ports:
       - "5432:5432"
     environment:
       - MOVIES_PATH=/media/movies
       - TV_PATH=/media/tv
+      - TZ=Etc/UTC
     volumes:
-      # One media root, with movies/ and tv/ inside it:
+      # One media root containing movies/ and tv/:
       - /path/to/your/media:/media:ro
       # ...or mount the two libraries separately:
       # - /path/to/your/movies:/media/movies:ro
@@ -48,49 +58,24 @@ services:
     restart: unless-stopped
 ```
 
-Then:
-
 ```bash
-docker compose up -d --build media-size-browser
+docker compose up -d sizearr
 ```
 
-Visit `http://<your-server-ip>:5432/`.
+Then browse to `http://<your-server-ip>:5432/`.
 
-### Using the published image
+> **Deleting files:** the mounts above are `:ro`, which makes the app
+> read-only regardless of `ENABLE_DELETE`. Drop `:ro` on the mount(s) you
+> want the Delete buttons to act on.
 
-Every push to `main` builds the image and publishes it to Docker Hub, so you
-don't have to build it yourself on the server. Once that's run at least
-once, you can point `docker-compose.yml` at the image instead:
+> **`ffprobe`:** the image bundles a static `ffprobe`, so the real-media
+> section of the detail popup (true resolution, bitrate, audio and subtitle
+> tracks) works with no extra setup. Set `ENABLE_FFPROBE=false` to skip it,
+> or point `FFPROBE` at a different binary. Running outside Docker without
+> `ffprobe` on `PATH`? sizearr just falls back to reading the filename.
 
-```yaml
-services:
-  media-size-browser:
-    image: maximiliancraig112/media-size-browser:latest
-    container_name: media-size-browser
-    ports:
-      - "5432:5432"
-    environment:
-      - MOVIES_PATH=/media/movies
-      - TV_PATH=/media/tv
-    volumes:
-      - /path/to/your/media:/media:ro
-    restart: unless-stopped
-```
 
-```bash
-docker compose pull media-size-browser
-docker compose up -d media-size-browser
-```
-
-The workflow needs two repository secrets to push to Docker Hub. In your
-GitHub repo, go to Settings → Secrets and variables → Actions, and add:
-
-| Secret               | Value                                                             |
-|-----------------------|--------------------------------------------------------------------|
-| `DOCKERHUB_USERNAME`  | `maximiliancraig112`                                              |
-| `DOCKERHUB_TOKEN`     | An access token from Docker Hub (Account Settings → Security → New Access Token), not your password |
-
-### Without Docker
+### Running Locally
 
 ```bash
 make install       # or: pip install -r requirements.txt
@@ -101,45 +86,61 @@ make run           # run against MOVIES_PATH / TV_PATH from the environment
 MOVIES_PATH=/data/movies TV_PATH=/data/tv make run
 ```
 
-By default it looks for media under `/media/movies` and `/media/tv`. Set
-`MOVIES_PATH` and `TV_PATH` to point it somewhere else, or mount your real
-directories to those paths if running in a container.
-
 `make run-local` uses `testdata/` — a small library of empty placeholder
 files (see [`testdata/README.md`](testdata/README.md)) so you can see the UI
-working without a real media library.
+without a real media library.
 
 ## Configuration
 
-| Variable                    | Default         | Description                                   |
-|------------------------------|-----------------|-----------------------------------------------|
-| `MOVIES_PATH`                 | `/media/movies` | Directory scanned for movie titles           |
-| `TV_PATH`                     | `/media/tv`     | Directory scanned for TV titles              |
-| `PORT`                        | `5432`          | Port the web server listens on               |
-| `REFRESH_INTERVAL_SECONDS`    | `3600`          | How often to automatically rescan, in seconds |
-| `LOG_LEVEL`                   | `INFO`          | `DEBUG` adds a log line per title with its size |
+All configuration is via environment variables.
 
-## Project layout
+| Variable                  | Default         | Description                                                        |
+|---------------------------|-----------------|--------------------------------------------------------------------|
+| `MOVIES_PATH`             | `/media/movies` | Directory scanned for movie titles                                |
+| `TV_PATH`                 | `/media/tv`     | Directory scanned for TV titles                                   |
+| `PORT`                    | `5432`          | Port the web server listens on                                    |
+| `REFRESH_INTERVAL_SECONDS`| `3600`          | How often to automatically rescan, in seconds                     |
+| `LOG_LEVEL`               | `INFO`          | `DEBUG` adds a log line per title with its measured size          |
+| `ENABLE_DELETE`           | `true`          | `false` hides the Delete buttons and rejects `POST /api/delete`   |
+| `ENABLE_FFPROBE`          | `true`          | `false` skips `ffprobe` even when it is installed                 |
+| `FFPROBE`                 | `ffprobe`       | Path to the `ffprobe` binary                                     |
+
+## How it works
+
+* Each top-level folder inside `MOVIES_PATH` / `TV_PATH` is one title. Its
+  size is the sum of every file nested under it (a bare file directly in the
+  root counts too).
+* Results are cached in memory and refreshed on the timer, on the *Rescan
+  now* button, and immediately after a delete.
+* `ffprobe` is only ever run on the single file you click — never during the
+  bulk scan — with a 20-second timeout.
+* Deletes resolve the target with `realpath` and reject anything that is not
+  strictly inside a media root (`..`, symlink escapes, the root itself).
+
+## HTTP API
+
+| Method & path       | Purpose                                                    |
+|---------------------|------------------------------------------------------------|
+| `GET /api/media`    | Cached scan results, totals, scan status, feature flags   |
+| `GET /api/detail`   | Detail for one title or file (`category`, `name`, `child`)|
+| `POST /api/rescan`  | Trigger a background rescan                                |
+| `POST /api/delete`  | Delete a title or file (`category`, `name`, `child`)      |
+
+## Repository layout
 
 ```
 .
-├── app.py                 # Flask app: scanning logic, logging, API routes
+├── app.py                    # Flask app: scan, detail, delete, API routes
 ├── templates/
-│   └── index.html         # Page markup only
+│   └── index.html            # Page markup only
 ├── static/
-│   ├── css/
-│   │   ├── base.css       # Design tokens, reset, document defaults
-│   │   ├── layout.css     # Page scaffold: column, header, stats grid, toolbar
-│   │   ├── components.css # Stat cards, filters, buttons, pills, status
-│   │   └── table.css      # DataTables theme + size-bar cell
-│   ├── js/
-│   │   └── app.js         # Fetches /api/media and renders the table
-│   └── vendor/            # Bundled jQuery + DataTables (no CDN needed)
-├── testdata/              # Empty placeholder library for `make run-local`
-├── requirements.txt
-├── Makefile               # `make install` / `make run` / `make run-local`
+│   ├── css/                  # base / layout / components / table
+│   ├── js/app.js             # Fetches the API and renders the table
+│   └── vendor/               # Bundled jQuery + DataTables (no CDN)
+├── testdata/                 # Placeholder library for `make run-local`
+├── images/                   # Screenshots used in this README
 ├── Dockerfile
-└── .github/
-    └── workflows/
-        └── deploy.yml     # Builds and pushes the image on every push to main
+├── Makefile                  # make install / run / run-local
+├── requirements.txt
+└── .github/workflows/deploy.yml
 ```

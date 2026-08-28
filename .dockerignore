@@ -1,6 +1,7 @@
 .git
 .github
 testdata
+images
 *.log
 __pycache__
 *.pyc

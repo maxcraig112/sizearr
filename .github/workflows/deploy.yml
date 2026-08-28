@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  IMAGE_NAME: maximiliancraig112/media-size-browser
+  IMAGE_NAME: maximiliancraig112/sizearr
 
 jobs:
   build-and-push:

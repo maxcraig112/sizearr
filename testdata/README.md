@@ -14,3 +14,6 @@ MOVIES_PATH=testdata/movies TV_PATH=testdata/tv make run
 
 Add or resize files freely; `make run-local` (or the "Rescan now" button)
 picks up changes.
+
+Because these files have no real content, the detail popup's `ffprobe`
+section stays empty for them — drop a real video in to see it populated.

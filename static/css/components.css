@@ -110,6 +110,17 @@
   cursor: default;
 }
 
+.btn--danger {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.btn--danger:hover:not(:disabled) {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: var(--accent-ink);
+}
+
 /* ---- Scanning indicator ---- */
 .scanning-pill {
   display: none;
@@ -180,4 +191,132 @@
   background: #23233a;
   border-color: #33335a;
   color: #9d9dff;
+}
+
+/* ---- Confirmation modal ---- */
+.modal[hidden] {
+  display: none;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.modal__dialog {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  padding: 20px 22px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+
+.modal__dialog--wide {
+  max-width: 560px;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+}
+
+.modal__title {
+  margin: 0 0 8px;
+  font-size: 16px;
+  font-weight: 650;
+}
+
+.modal__body {
+  margin: 0 0 14px;
+  color: var(--muted);
+  font-size: 13px;
+  word-break: break-word;
+}
+
+.modal__error {
+  margin: 0 0 14px;
+  color: var(--danger);
+  font-size: 12.5px;
+}
+
+.modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* ---- Detail popup body ---- */
+.detail__loading {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.detail__list {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 6px 16px;
+  margin: 0 0 4px;
+  font-size: 13px;
+}
+
+.detail__list dt {
+  color: var(--muted);
+}
+
+.detail__list dd {
+  margin: 0;
+  word-break: break-word;
+}
+
+.detail__list dt.detail__section {
+  grid-column: 1 / -1;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  color: var(--text);
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.detail__list dt.detail__section + dd {
+  display: none;
+}
+
+.detail__path {
+  display: inline-block;
+  padding: 2px 6px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11.5px;
+  word-break: break-all;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  padding: 2px 8px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 11px;
 }

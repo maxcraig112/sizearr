@@ -59,7 +59,9 @@ td.col-expand {
   text-align: center;
 }
 
-table.dataTable tbody tr.has-children {
+table.dataTable tbody tr.has-children,
+table.dataTable tbody tr.is-detailable,
+.episodes__table tr.is-detailable {
   cursor: pointer;
 }
 
@@ -121,6 +123,36 @@ table.dataTable tbody tr.child td {
   white-space: nowrap;
   color: var(--text);
   font-variant-numeric: tabular-nums;
+}
+
+.episode__actions {
+  width: 1%;
+  padding-left: 14px !important;
+  text-align: right;
+}
+
+/* ---- Row actions (delete) ---- */
+th.col-actions,
+td.col-actions {
+  width: 1%;
+  white-space: nowrap;
+  text-align: right;
+}
+
+.row-delete {
+  padding: 3px 9px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--muted);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.row-delete:hover {
+  border-color: var(--danger);
+  color: var(--danger);
 }
 
 /* Soften the built-in sort arrows */
