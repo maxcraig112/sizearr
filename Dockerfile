@@ -10,6 +10,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app.py .
+COPY sizearr/ sizearr/
 COPY templates/ templates/
 COPY static/ static/
 

@@ -222,7 +222,13 @@
   function submitDelete() {
     if (!pendingDelete) return;
     var target = pendingDelete;
-    var btn = $("#confirmDelete").prop("disabled", true).text("Deleting…");
+
+    // Close the dialog straight away — the server removes it from the cache
+    // immediately and does the actual disk delete in the background, so
+    // there's nothing to wait on.
+    closeConfirm();
+    lastItemsJson = null; // force the grid to re-render on the next poll
+
     $.ajax({
       url: "/api/delete",
       method: "POST",
@@ -234,14 +240,12 @@
       })
     })
       .done(function () {
-        closeConfirm();
-        lastItemsJson = null; // force the grid to re-render on the next poll
         loadData();
       })
       .fail(function (xhr) {
         var msg = (xhr.responseJSON && xhr.responseJSON.error) || ("HTTP " + xhr.status);
-        $("#confirmError").prop("hidden", false).text("Delete failed: " + msg);
-        btn.prop("disabled", false).text("Delete");
+        $("#status").addClass("is-error").text("Delete failed: " + msg);
+        loadData();
       });
   }
 

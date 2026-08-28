@@ -108,14 +108,17 @@ All configuration is via environment variables.
 ## How it works
 
 * Each top-level folder inside `MOVIES_PATH` / `TV_PATH` is one title. Its
-  size is the sum of every file nested under it (a bare file directly in the
-  root counts too).
+  size is the sum of the media files under it. Artwork, `.nfo` and other
+  non-media files are skipped so the totals reflect what the video actually
+  costs.
 * Results are cached in memory and refreshed on the timer, on the *Rescan
   now* button, and immediately after a delete.
 * `ffprobe` is only ever run on the single file you click — never during the
   bulk scan — with a 20-second timeout.
 * Deletes resolve the target with `realpath` and reject anything that is not
-  strictly inside a media root (`..`, symlink escapes, the root itself).
+  strictly inside a media root (`..`, symlink escapes, the root itself). The
+  request returns straight away and the disk delete happens in the
+  background, so removing a big folder doesn't hang the browser.
 
 ## HTTP API
 
@@ -130,7 +133,17 @@ All configuration is via environment variables.
 
 ```
 .
-├── app.py                    # Flask app: scan, detail, delete, API routes
+├── app.py                    # Entrypoint - starts sizearr.web
+├── sizearr/                  # The app, split by concern:
+│   ├── config.py             #   env vars + logging, all in one place
+│   ├── fsutil.py             #   walking the media tree
+│   ├── scanner.py            #   folders -> the flat list of titles
+│   ├── cache.py              #   in-memory index of the last scan + refresh loop
+│   ├── paths.py              #   validating a request into a path inside a root
+│   ├── naming.py             #   quality tags + media/non-media extensions
+│   ├── ffprobe.py            #   optional real media metadata
+│   ├── detail.py             #   the per-item detail payload
+│   └── web.py                #   Flask app and routes
 ├── templates/
 │   └── index.html            # Page markup only
 ├── static/
