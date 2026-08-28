@@ -84,6 +84,13 @@ jobs:
           tags: |
             ${{ env.IMAGE_NAME }}:latest
             ${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}
+          labels: |
+            org.opencontainers.image.title=sizearr
+            org.opencontainers.image.description=Browse what's taking up disk space across your movie and TV libraries.
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.url=https://github.com/${{ github.repository }}
+            org.opencontainers.image.version=${{ steps.version.outputs.next }}
+            org.opencontainers.image.revision=${{ github.sha }}
           cache-from: type=gha
 
       - name: Create and push tag
@@ -107,3 +114,17 @@ jobs:
               --title "${{ steps.version.outputs.next }}" \
               --generate-notes
           fi
+
+      # Pushes the Docker Hub repo's short description + full overview (this
+      # README, with relative links rewritten to absolute GitHub URLs).
+      # DOCKERHUB_TOKEN needs "Read, Write, Delete" scope for this API; if it
+      # 401s, add a DOCKERHUB_PASSWORD secret and use that here instead.
+      - name: Update Docker Hub description
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: ${{ env.IMAGE_NAME }}
+          short-description: "Browse what's taking up disk space across your movie and TV libraries"
+          readme-filepath: ./README.md
+          enable-url-completion: true
