@@ -1,0 +1,89 @@
+# sizearr default configuration.
+#
+# Don't edit this file. To change something, put just the keys you want into
+# your own YAML file and point sizearr at it:
+#
+#   * set  SIZEARR_CONFIG=/path/to/your/config.yml
+#   * or   mount your file at /config/config.yml  (picked up automatically)
+#
+# Your values replace the defaults key by key. If you set `media_extensions.video`
+# your list replaces the default video list entirely - copy the ones you want to
+# keep. Leaving a key out keeps the default.
+
+# ---------------------------------------------------------------------------
+# What counts as "media"
+# ---------------------------------------------------------------------------
+# Only files whose extension is listed here are counted. Everything else -
+# artwork, .nfo files, release junk - is ignored, so the size totals reflect
+# what the actual video/audio costs. Matched case-insensitively; the leading
+# dot is optional.
+media_extensions:
+  video:
+    - .mkv
+    - .mp4
+    - .m4v
+    - .avi
+    - .mov
+    - .wmv
+    - .mpeg
+    - .mpg
+    - .m2v
+    - .mp2
+    - .ts
+    - .m2ts
+    - .mts
+    - .mxf
+    - .vob    # DVD VIDEO_TS - the bulk of a DVD rip
+    - .ifo    # DVD/BD nav files - small, but part of the rip's true size
+    - .bup
+    - .evo    # HD DVD
+    - .webm
+    - .flv
+    - .f4v
+    - .ogv
+    - .ogm
+    - .divx
+    - .rm
+    - .rmvb
+    - .asf
+    - .3gp
+    - .3g2
+    - .qt
+    - .yuv
+    - .iso    # disc images - genuinely media-sized, so counted
+    - .img
+    - .bin
+
+  audio:
+    - .mp3
+    - .flac
+    - .aac
+    - .m4a
+    - .m4b
+    - .ogg
+    - .oga
+    - .opus
+    - .wav
+    - .wma
+    - .alac
+    - .ape
+    - .ac3
+    - .dts
+    - .mka
+
+  subtitle:
+    - .srt
+    - .ass
+    - .ssa
+    - .sub
+    - .idx
+    - .sup
+    - .vtt
+    - .smi
+
+# ---------------------------------------------------------------------------
+# Scan tuning
+# ---------------------------------------------------------------------------
+# A show with more files than this only lists its largest N in the per-episode
+# breakdown (the folder total still counts every file).
+max_children: 1000
