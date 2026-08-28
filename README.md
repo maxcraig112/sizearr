@@ -1,6 +1,6 @@
 # sizearr
 
-[![Build and publish image](https://github.com/maxcraig112/sizearr/actions/workflows/deploy.yml/badge.svg)](https://github.com/maxcraig112/sizearr/actions/workflows/deploy.yml)
+[![Release](https://github.com/maxcraig112/sizearr/actions/workflows/release.yml/badge.svg)](https://github.com/maxcraig112/sizearr/actions/workflows/release.yml)
 [![Docker image size](https://img.shields.io/docker/image-size/maximiliancraig112/sizearr/latest?label=docker%20image)](https://hub.docker.com/r/maximiliancraig112/sizearr)
 [![Docker pulls](https://img.shields.io/docker/pulls/maximiliancraig112/sizearr)](https://hub.docker.com/r/maximiliancraig112/sizearr)
 
@@ -142,5 +142,5 @@ All configuration is via environment variables.
 ├── Dockerfile
 ├── Makefile                  # make install / run / run-local
 ├── requirements.txt
-└── .github/workflows/deploy.yml
+└── .github/workflows/release.yml
 ```
