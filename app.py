@@ -23,6 +23,10 @@ logging.basicConfig(
 )
 log = logging.getLogger("sizearr")
 
+# Baked in at image build time from the release tag (see Dockerfile /
+# .github/workflows/release.yml). "dev" when run from a plain checkout.
+VERSION = os.environ.get("SIZEARR_VERSION", "dev")
+
 app = Flask(__name__)
 
 # Root media directories to scan. Each top-level folder inside these
@@ -229,7 +233,7 @@ def inject_static_url():
             pass
         return url_for("static", filename=filename, v=version)
 
-    return {"static_url": static_url}
+    return {"static_url": static_url, "version": VERSION}
 
 
 @app.route("/", methods=["GET"])
@@ -594,8 +598,8 @@ def api_detail():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", "5432"))
     log.info(
-        "sizearr starting on port %d (log level %s, delete %s)",
-        port, LOG_LEVEL, "enabled" if ENABLE_DELETE else "disabled",
+        "sizearr %s starting on port %d (log level %s, delete %s)",
+        VERSION, port, LOG_LEVEL, "enabled" if ENABLE_DELETE else "disabled",
     )
     for category, root in MEDIA_ROOTS.items():
         exists = os.path.isdir(root)
